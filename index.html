@@ -198,13 +198,13 @@
     uploadDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#222;color:#fff;cursor:pointer;height:150px;';
     uploadDiv.innerHTML = '<span style="font-size:50px;">+</span>';
     uploadDiv.onclick = () => imageUploader.click();
-    grid.appendChild(uploadDiv);
+    return uploadDiv;
   }
 
   function loadImages() {
     grid.innerHTML = '';
     imageFiles.forEach(img => grid.appendChild(createImageItem(`./images/${img}`)));
-    addUploadItem();
+    const uploadDiv = addUploadItem();
 
     imagesLoaded(grid, () => {
       masonry = new Masonry(grid, {
@@ -215,19 +215,29 @@
     });
   }
 
+  function addUploadItem() {
+    const uploadDiv = document.createElement('div');
+    uploadDiv.classList.add('grid-item');
+    uploadDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#222;color:#fff;cursor:pointer;height:150px;';
+    uploadDiv.innerHTML = '<span style="font-size:50px;">+</span>';
+    uploadDiv.onclick = () => imageUploader.click();
+    grid.appendChild(uploadDiv);
+    return uploadDiv;
+  }
+
   imageUploader.addEventListener('change', (event) => {
     const files = event.target.files;
+    const uploadDiv = grid.lastChild;
 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onload = function(e) {
         const imgElement = createImageItem(e.target.result, true);
-        grid.insertBefore(imgElement, grid.lastChild);
+        grid.insertBefore(imgElement, uploadDiv);
 
         imagesLoaded(imgElement, () => {
           masonry.appended(imgElement);
           masonry.layout();
-          grid.appendChild(grid.lastChild); // Ensuring "+" stays last
         });
       }
       reader.readAsDataURL(file);
