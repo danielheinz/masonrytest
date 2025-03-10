@@ -180,8 +180,15 @@
     div.classList.add('grid-item');
     div.innerHTML = `
       <img src="${src}" alt="Bild">
+      <button class="remove-btn" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;">&times;</button>
       ${!isLocal ? `<a href="${src}" download class="download-btn">Download</a>` : ''}
     `;
+
+    div.querySelector('.remove-btn').onclick = function() {
+      masonry.remove(div);
+      masonry.layout();
+    };
+
     return div;
   }
 
@@ -220,6 +227,7 @@
         imagesLoaded(imgElement, () => {
           masonry.appended(imgElement);
           masonry.layout();
+          grid.appendChild(grid.lastChild); // Ensuring "+" stays last
         });
       }
       reader.readAsDataURL(file);
