@@ -157,56 +157,90 @@
       <input type="text" placeholder="Subscribe to start creating...">
     </div>
 
-    <div class="grid-container">
-      <div class="grid" id="grid"></div>
-    </div>
-  </div>
+<div class="grid-container">
+  <div class="grid" id="grid"></div>
+</div>
 
-  <nav class="bottom-nav">
-    <a href="#">Menu</a>
-    <a class="active">Explore</a>
-    <a>Create</a>
-    <a>Organize</a>
-    <a>Subscribe</a>
-  </nav>
+<input type="file" id="imageUploader" multiple accept="image/*" style="display: none;">
 
-  <script>
-    const imageFiles = [
-      "1.png", "2.png", "3.png", "4.png", "5.png",
-      "6.png", "7.png", "8.png", "9.png", "10.png",
-      "11.png", "12.png", "13.png", "14.png", "15.png",
-      "16.png", "17.png", "18.png", "19.png", "20.png"
-    ];
+<script>
+  const imageFiles = [
+    "1.png", "2.png", "3.png", "4.png", "5.png",
+    "6.png", "7.png", "8.png", "9.png", "10.png",
+    "11.png", "12.png", "13.png", "14.png", "15.png",
+    "16.png", "17.png", "18.png", "19.png", "20.png"
+  ];
 
-    const grid = document.getElementById('grid');
-    let masonry;
+  const grid = document.getElementById('grid');
+  const imageUploader = document.getElementById('imageUploader');
+  let masonry;
 
-    function loadImages() {
-      grid.innerHTML = '';
-      imageFiles.forEach(img => {
-        const div = document.createElement('div');
-        div.classList.add('grid-item');
-        div.innerHTML = `
-          <img src="./images/${img}" alt="Bild">
-          <a href="./images/${img}" download class="download-btn">Download</a>
-        `;
-        grid.appendChild(div);
+  function createImageItem(src, isLocal = false) {
+    const div = document.createElement('div');
+    div.classList.add('grid-item');
+    div.innerHTML = `
+      <img src="${src}" alt="Bild">
+      ${!isLocal ? `<a href="${src}" download class="download-btn">Download</a>` : ''}
+    `;
+    return div;
+  }
+
+  function addUploadItem() {
+    const uploadDiv = document.createElement('div');
+    uploadDiv.classList.add('grid-item');
+    uploadDiv.style.cssText = 'display:flex;align-items:center;justify-content:center;background:#222;color:#fff;cursor:pointer;height:150px;';
+    uploadDiv.innerHTML = '<span style="font-size:50px;">+</span>';
+    uploadDiv.onclick = () => imageUploader.click();
+    grid.appendChild(uploadDiv);
+  }
+
+  function loadImages() {
+    grid.innerHTML = '';
+    imageFiles.forEach(img => grid.appendChild(createImageItem(`./images/${img}`)));
+    addUploadItem();
+
+    imagesLoaded(grid, () => {
+      masonry = new Masonry(grid, {
+        itemSelector: '.grid-item',
+        gutter: 15,
+        fitWidth: true
       });
-
-      imagesLoaded(grid, () => {
-        masonry = new Masonry(grid, {
-          itemSelector: '.grid-item',
-          gutter: 15,
-          fitWidth: true
-        });
-      });
-    }
-
-    window.onload = loadImages;
-
-    window.addEventListener('resize', () => {
-      if(masonry) masonry.layout();
     });
-  </script>
+  }
+
+  imageUploader.addEventListener('change', (event) => {
+    const files = event.target.files;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imgElement = createImageItem(e.target.result, true);
+        grid.insertBefore(imgElement, grid.lastChild);
+
+        imagesLoaded(imgElement, () => {
+          masonry.appended(imgElement);
+          masonry.layout();
+        });
+      }
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = '';
+  });
+
+  window.onload = loadImages;
+
+  window.addEventListener('resize', () => {
+    if (masonry) masonry.layout();
+  });
+</script>
+
+<nav class="bottom-nav">
+  <a href="#">Menu</a>
+  <a class="active">Explore</a>
+  <a>Create</a>
+  <a>Organize</a>
+  <a>Subscribe</a>
+</nav>
 </body>
 </html>
